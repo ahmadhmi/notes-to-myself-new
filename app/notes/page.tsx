@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/UI/Sidebar";
 import { Note } from "../Types/Note";
-import { useUserAuth } from "../_utils/auth-context";
 import NoteViewer from "../components/UI/NoteViewer";
 import { RedirectType, redirect } from "next/navigation";
-import { createNote, getNotes } from "../_services/notes-service";
+import { useSession } from "next-auth/react";
 
 export default function NotesPage()
 {   
 
-    const { user, gitHubSignIn, firebaseSignOut } = useUserAuth();
+
+    const {status, data: user} = useSession();
     let temp:Note[] = []; 
     const [notes, setNotes] = useState(temp);
     let tempNote:Note = {
@@ -25,7 +25,7 @@ export default function NotesPage()
 
       async function loadNotes()
       {
-        let items = await getNotes(user); 
+        let items: Note[] = [{id: "1", title: "note 1", content: "sadasdasdasdasd", date: "1/1/1"}, {id: "2", title: "note 2", content: "sadasdasdasdasd", date: "1/1/1"}, {id: "3", title: "note 3", content: "sadasdasdasdasd", date: "1/1/1"}]; 
         setNotes(items);
       }
   
@@ -38,7 +38,7 @@ export default function NotesPage()
                 console.log(ex); 
             }
           },
-          [user]
+          [notes]
       )
        
     
@@ -49,10 +49,6 @@ export default function NotesPage()
     
       async function handleAddNote(note : Note)
       {
-        let id = await createNote(user, note); 
-        if(id){
-          note.id = id; //temp fix
-        }
         setViewedNote(note); 
         setNotes([...notes, note]);
       }
@@ -62,7 +58,7 @@ export default function NotesPage()
     
 
 
-      if(user){
+      if(status === "authenticated"){
         return(
             <main className="flex flex-row">
             <Sidebar notes={notes} handleSetViewedNote={handleSetViewedNote}></Sidebar>
